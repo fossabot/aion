@@ -6,13 +6,16 @@ import (
 
 type Config struct {
 	Lifetime  uint
-	ShardSize uint
+	MaxShardSize uint
+	NumberOfShards uint
+
 }
 
 func DefaultConfig() Config {
 	return Config{
 		Lifetime:  uint(time.Hour * 24),
-		ShardSize: 1024,
+		MaxShardSize: 1024,
+	NumberOfShards: 4,
 	}
 
 }
