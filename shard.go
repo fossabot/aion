@@ -1,6 +1,7 @@
 package shardcache
 
 import (
+	"github.com/chronark/charon/logger"
 	"sync"
 	"time"
 )
@@ -21,27 +22,42 @@ func NewShard(config Config) shard {
 
 }
 
-func (s *shard) get(key uint64) (interface{}, bool) {
+func (s *shard) get(hashKey uint64) (interface{}, bool) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
-	item, found := s.items[key]
+	item, found := s.items[hashKey]
 	if found {
-		return item.object, true
+		if !item.hasExpired() {
+			return item.object, true
+		} else {
+			err := s.delete(hashKey)
+			if err != nil {
+				logger.Error(err)
+			}
+		}
 	}
 	return nil, false
 }
 
 func (s *shard) set(entry interface{}) error {
-	s.lock.RLock()
-	defer s.lock.RUnlock()
+	s.lock.Lock()
+	defer s.lock.Unlock()
 
-	key := hash(entry)
+	hashKey := hash(entry)
 
-	s.items[key] = item{
+	s.items[hashKey] = item{
 		object:    entry,
 		endOfLife: uint(time.Now().Unix()) + s.lifeTime,
 	}
 
+	return nil
+
+}
+
+func (s *shard) delete(hashKey uint64) error {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+	delete(s.items, hashKey)
 	return nil
 
 }
