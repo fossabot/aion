@@ -5,23 +5,24 @@ import (
 	"time"
 )
 
-type Shard struct {
+type shard struct {
 	items    map[uint64]item
 	lock     *sync.RWMutex
-	size     uint
-	lifeTime int64
+	maxSize  uint
+	lifeTime uint
 }
 
-func NewShard(config Config) (Shard, error) {
-	shard := Shard{
-		items: make(map[uint64]item, config.ShardSize),
-		size:  config.ShardSize,
+func NewShard(config Config) (shard, error) {
+	shard := shard{
+		items:    make(map[uint64]item, config.MaxShardSize),
+		maxSize:  config.MaxShardSize,
+		lifeTime: config.Lifetime,
 	}
 
 	return shard, nil
 }
 
-func (s Shard) get(key uint64) (interface{}, bool) {
+func (s shard) get(key uint64) (interface{}, bool) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	item, found := s.items[key]
@@ -31,13 +32,13 @@ func (s Shard) get(key uint64) (interface{}, bool) {
 	return nil, false
 }
 
-func (s Shard) set(key uint64, entry interface{}) error {
+func (s shard) set(key uint64, entry interface{}) error {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 
 	s.items[key] = item{
 		object:    entry,
-		endOfLife: time.Now().Unix() + s.lifeTime,
+		endOfLife: uint(time.Now().Unix()) + s.lifeTime,
 	}
 
 	return nil

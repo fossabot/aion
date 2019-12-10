@@ -26,9 +26,9 @@ type object struct {
 
 type item struct {
 	object    interface{}
-	endOfLife int64
+	endOfLife uint
 }
 
 func (i item) hasExpired() bool {
-	return time.Now().Unix() > i.endOfLife
+	return uint(time.Now().Unix()) > i.endOfLife
 }
