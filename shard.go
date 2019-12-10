@@ -1,4 +1,4 @@
-package cache
+package shardcache
 
 import (
 	"sync"
@@ -7,22 +7,21 @@ import (
 
 type shard struct {
 	items    map[uint64]item
-	lock     *sync.RWMutex
+	lock     sync.RWMutex
 	maxSize  uint
 	lifeTime uint
 }
 
-func NewShard(config Config) (shard, error) {
-	shard := shard{
+func NewShard(config Config) shard {
+	return shard{
 		items:    make(map[uint64]item, config.MaxShardSize),
 		maxSize:  config.MaxShardSize,
 		lifeTime: config.Lifetime,
 	}
 
-	return shard, nil
 }
 
-func (s shard) get(key uint64) (interface{}, bool) {
+func (s *shard) get(key uint64) (interface{}, bool) {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
 	item, found := s.items[key]
@@ -32,9 +31,11 @@ func (s shard) get(key uint64) (interface{}, bool) {
 	return nil, false
 }
 
-func (s shard) set(key uint64, entry interface{}) error {
+func (s *shard) set(entry interface{}) error {
 	s.lock.RLock()
 	defer s.lock.RUnlock()
+
+	key := hash(entry)
 
 	s.items[key] = item{
 		object:    entry,

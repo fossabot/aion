@@ -1,11 +1,20 @@
-package cache
+package shardcache
 
 import (
+	"fmt"
+	"github.com/chronark/charon/logger"
 	"hash/fnv"
 )
 
-func hash(input []byte) uint64 {
+func PublicHash(input interface{}) uint64 {
+	return hash(input)
+}
+
+func hash(input interface{}) uint64 {
 	h := fnv.New64()
-	h.Write(input)
+	_, err := h.Write([]byte(fmt.Sprintf("%v", input)))
+	if err != nil {
+		logger.Error(err)
+	}
 	return h.Sum64()
 }

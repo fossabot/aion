@@ -1,4 +1,4 @@
-package cache
+package shardcache
 
 import (
 	"time"
@@ -7,14 +7,14 @@ import (
 type Config struct {
 	Lifetime       uint
 	MaxShardSize   uint
-	NumberOfShards uint
+	NumberOfShards int
 }
 
 func DefaultConfig() Config {
 	return Config{
 		Lifetime:       uint(time.Hour * 24),
 		MaxShardSize:   1024,
-		NumberOfShards: 4,
+		NumberOfShards: 1024,
 	}
 
 }
