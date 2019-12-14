@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package chronos_test
-
+package aion_test
 
 import (
 	"errors"
+	"fmt"
 	"github.com/allegro/bigcache"
-	"github.com/chronark/shardcache"
+	"github.com/chronark/aion"
 	"github.com/pingcap/go-ycsb/pkg/generator"
 	"math/rand"
 	"strconv"
@@ -30,7 +30,7 @@ import (
 	"time"
 )
 
-type Cache interface {
+type TestCache interface {
 	Get(key []byte) ([]byte, error)
 	Set(key []byte, value []byte) error
 }
@@ -86,6 +86,47 @@ func oneKeyList() [][]byte {
 	}
 
 	return keys
+}
+
+//========================================================================
+//                               Aion
+//========================================================================
+
+type Aion struct {
+	c *aion.Cache
+}
+
+func (a *Aion) Get(key []byte) ([]byte, error) {
+	data, hit := a.c.Get(string(key))
+	if !hit {
+		return nil, errKeyNotFound
+	}
+	return []byte(fmt.Sprintf("%v", data)), nil
+}
+
+func (a *Aion) Set(key, value []byte) error {
+	return a.c.Set(string(key), value)
+}
+
+func newAion(keysInWindow int) *Aion {
+	cache, err := aion.NewCache(aion.Config{
+		Lifetime:       uint(time.Hour * 24),
+		MaxShardSize:   1024,
+		NumberOfShards: 64,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	// Enforce full initialization of internal structures. This is taken
+	// from GetPutBenchmark.java from java caffeine. It is required in
+	// caffeine given that it keeps buffering the keys for applying the
+	// necessary changes later. This is probably unnecessary here.
+	for i := 0; i < 2*workloadSize; i++ {
+		_ = cache.Set(strconv.Itoa(i), []byte("data"))
+	}
+
+	return &Aion{cache}
 }
 
 //========================================================================
@@ -165,7 +206,7 @@ func newSyncMap() *SyncMap {
 //                         Benchmark Code
 //========================================================================
 
-func runCacheBenchmark(b *testing.B, cache Cache, keys [][]byte, pctWrites uint64) {
+func runCacheBenchmark(b *testing.B, cache TestCache, keys [][]byte, pctWrites uint64) {
 	b.ReportAllocs()
 
 	size := len(keys)
@@ -205,26 +246,32 @@ func BenchmarkCaches(b *testing.B) {
 	// 3 types of benchmark (read, write, mixed)
 	benchmarks := []struct {
 		name      string
-		cache     Cache
+		cache     TestCache
 		keys      [][]byte
 		pctWrites uint64
 	}{
+		{"AionZipfRead", newAion(b.N), zipfList, 0},
 		{"BigCacheZipfRead", newBigCache(b.N), zipfList, 0},
 		{"SyncMapZipfRead", newSyncMap(), zipfList, 0},
 
+		{"AionOneKeyRead", newBigCache(b.N), oneList, 0},
 		{"BigCacheOneKeyRead", newBigCache(b.N), oneList, 0},
 		{"SyncMapOneKeyRead", newSyncMap(), oneList, 0},
 
+		{"AionZipfWrite", newBigCache(b.N), zipfList, 100},
 		{"BigCacheZipfWrite", newBigCache(b.N), zipfList, 100},
 		{"SyncMapZipfWrite", newSyncMap(), zipfList, 100},
 
 		{"BigCacheOneKeyWrite", newBigCache(b.N), oneList, 100},
+		{"AionOneKeyWrite", newBigCache(b.N), oneList, 100},
 		{"SyncMapOneKeyWrite", newSyncMap(), oneList, 100},
 
 		{"BigCacheZipfMixed", newBigCache(b.N), zipfList, 25},
+		{"AionZipfMixed", newBigCache(b.N), zipfList, 25},
 		{"SyncMapZipfMixed", newSyncMap(), zipfList, 25},
 
 		{"BigCacheOneKeyMixed", newBigCache(b.N), oneList, 25},
+		{"AionOneKeyMixed", newBigCache(b.N), oneList, 25},
 		{"SyncMapOneKeyMixed", newSyncMap(), oneList, 25},
 	}
 
