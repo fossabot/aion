@@ -1,4 +1,4 @@
-package shardcache
+package chronos
 
 import (
 	"fmt"
