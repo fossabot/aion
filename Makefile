@@ -1,7 +1,7 @@
 fmt:
 	go fmt ./...
 	go vet ./...
-	~/go/bin/golangci-lint run 
+	~/go/bin/golangci-lint run -D errcheck
 	
 
 test: fmt

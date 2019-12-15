@@ -28,7 +28,6 @@ func Test_newShard(t *testing.T) {
 }
 
 func Test_shard_get(t *testing.T) {
-
 	data := struct {
 		x int
 	}{
@@ -53,16 +52,33 @@ func Test_shard_get(t *testing.T) {
 		}, {
 			name: "hit",
 			s: func() *shard {
-				fullShard := newShard(DefaultConfig())
-				err := fullShard.set(hash("hit"), data)
+				shard := newShard(DefaultConfig())
+				err := shard.set(hash("hit"), data)
 				if err != nil {
 					log.Fatal(err)
 				}
-				return fullShard
+				return shard
 			}(),
 			args:     args{hashKey: hash("hit")},
 			wantData: data,
 			wantHit:  true,
+		}, {
+			name: "expired hit",
+			s: func() *shard {
+				shard := newShard(Config{
+					Lifetime:       0,
+					MaxShardSize:   1024,
+					NumberOfShards: 16,
+				})
+				err := shard.set(hash("expired_hit"), data)
+				if err != nil {
+					log.Fatal(err)
+				}
+				return shard
+			}(),
+			args:     args{hashKey: hash("expired_hit")},
+			wantData: nil,
+			wantHit:  false,
 		},
 	}
 	for _, tt := range tests {

@@ -1,6 +1,7 @@
 package aion
 
 import (
+	"log"
 	"sync"
 )
 
@@ -26,10 +27,11 @@ func (s *shard) get(hashKey uint64) (interface{}, bool) {
 	item, found := s.items[hashKey]
 
 	if found {
-		if !item.hasExpired() {
-			return item.object, true
-		} else {
+		log.Printf("%v\n", item)
+		if item.hasExpired() {
 			s.delete(hashKey)
+		} else {
+			return item.object, true
 		}
 	}
 
