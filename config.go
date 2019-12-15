@@ -5,9 +5,9 @@ import (
 )
 
 type Config struct {
-	Lifetime       uint
-	MaxShardSize   uint
-	NumberOfShards int
+	Lifetime       uint `json:"lifetime"`
+	MaxShardSize   uint `json:"max_shard_size"`
+	NumberOfShards int  `json:"number_of_shards"`
 }
 
 func DefaultConfig() Config {
