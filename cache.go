@@ -1,6 +1,8 @@
 package aion
 
-import ()
+import (
+	"errors"
+)
 
 type Cache struct {
 	shards       []*shard
@@ -40,6 +42,9 @@ func (c *Cache) Get(key string) (data interface{}, hit bool) {
 }
 
 func (c *Cache) Set(key string, entry interface{}) error {
+	if len(key) == 0 {
+		return errors.New("key must not be empty")
+	}
 	hashKey := hash(key)
 	shard := c.getShard(hashKey)
 	return shard.set(hashKey, entry)
