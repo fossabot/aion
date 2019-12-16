@@ -12,10 +12,10 @@ type item struct {
 func newItem(object interface{}, lifeTime uint) item {
 	return item{
 		object:    object,
-		endOfLife: uint(time.Now().Unix()) + lifeTime,
+		endOfLife: uint(time.Now().Add(lifeTime * time.Second)
 	}
 }
 
 func (i item) hasExpired() bool {
-	return uint(time.Now().Unix()) > i.endOfLife
+	return uint(time.Now()) > i.endOfLife
 }

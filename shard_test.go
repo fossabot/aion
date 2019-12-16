@@ -16,7 +16,25 @@ func Test_newShard(t *testing.T) {
 		args args
 		want *shard
 	}{
-		// TODO: Add test cases.
+		{
+
+			name: "default shard",
+			args: args{config: DefaultConfig()},
+			want: newShard(DefaultConfig()),
+		}, {
+
+			name: "custom shard",
+			args: args{config: Config{
+				Lifetime:       2,
+				MaxShardSize:   4,
+				NumberOfShards: 1,
+			}},
+			want: newShard(Config{
+				Lifetime:       2,
+				MaxShardSize:   4,
+				NumberOfShards: 1,
+			}),
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

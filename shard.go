@@ -26,6 +26,8 @@ func (s *shard) get(hashKey uint64) (interface{}, bool) {
 	defer s.lock.RUnlock()
 	item, found := s.items[hashKey]
 
+	log.Println(item)
+	log.Println(found)
 	if found {
 		log.Printf("%v\n", item)
 		if item.hasExpired() {
