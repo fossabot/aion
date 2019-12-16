@@ -9,7 +9,7 @@ type shard struct {
 	items    map[uint64]item
 	lock     sync.RWMutex
 	maxSize  uint
-	lifeTime uint
+	lifeTime int64
 }
 
 func newShard(config Config) *shard {
@@ -22,14 +22,12 @@ func newShard(config Config) *shard {
 }
 
 func (s *shard) get(hashKey uint64) (interface{}, bool) {
-	s.lock.RLock()
-	defer s.lock.RUnlock()
+	//s.lock.RLock()
+	//defer s.lock.RUnlock()
 	item, found := s.items[hashKey]
 
-	log.Println(item)
-	log.Println(found)
 	if found {
-		log.Printf("%v\n", item)
+		log.Printf("%v, %v\n", found, item)
 		if item.hasExpired() {
 			s.delete(hashKey)
 		} else {

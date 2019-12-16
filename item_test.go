@@ -19,7 +19,7 @@ func Test_item_hasExpired(t *testing.T) {
 				}{
 					x: 1,
 				},
-				endOfLife: uint(time.Now().Unix()) - 2000,
+				endOfLife: time.Now().Unix() - 10,
 			},
 			want: true,
 		},
@@ -31,7 +31,7 @@ func Test_item_hasExpired(t *testing.T) {
 				}{
 					x: 1,
 				},
-				endOfLife: uint(time.Now().Unix()) + 2000,
+				endOfLife: time.Now().Unix() + 100000,
 			},
 			want: false,
 		},

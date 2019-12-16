@@ -68,25 +68,11 @@ func TestCache_getShard(t *testing.T) {
 }
 
 func TestCache_Get(t *testing.T) {
-	cacheWithOutContent, err := NewCache(DefaultConfig())
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	cacheWithContent, err := NewCache(DefaultConfig())
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	key := "RANDOMKEY"
 	data := struct {
 		x int
 	}{x: rand.Intn(10000)}
-
-	err = cacheWithContent.Set(key, data)
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	type args struct {
 		key string
@@ -99,15 +85,31 @@ func TestCache_Get(t *testing.T) {
 		wantHit  bool
 	}{
 		{
-			name:     "miss",
-			c:        cacheWithOutContent,
+			name: "miss",
+			c: func() *Cache {
+				cache, err := NewCache(DefaultConfig())
+				if err != nil {
+					log.Fatal(err)
+				}
+				return cache
+			}(),
 			args:     args{key: key},
 			wantData: nil,
 			wantHit:  false,
 		},
 		{
-			name:     "hit",
-			c:        cacheWithContent,
+			name: "hit",
+			c: func() *Cache {
+				cache, err := NewCache(DefaultConfig())
+				if err != nil {
+					log.Fatal(err)
+				}
+				err = cache.Set(key, data)
+				if err != nil {
+					log.Fatal(err)
+				}
+				return cache
+			}(),
 			args:     args{key: key},
 			wantData: data,
 			wantHit:  true,

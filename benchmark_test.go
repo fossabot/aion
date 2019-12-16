@@ -110,7 +110,7 @@ func (a *Aion) Set(key, value []byte) error {
 
 func newAion(keysInWindow int) *Aion {
 	cache, err := aion.NewCache(aion.Config{
-		Lifetime:       uint(time.Hour * 24),
+		Lifetime:       int64(time.Hour * 24),
 		MaxShardSize:   1024,
 		NumberOfShards: 64,
 	})

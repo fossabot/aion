@@ -5,6 +5,7 @@ import (
 	"log"
 	"reflect"
 	"testing"
+	"time"
 )
 
 func Test_newShard(t *testing.T) {
@@ -84,7 +85,7 @@ func Test_shard_get(t *testing.T) {
 			name: "expired hit",
 			s: func() *shard {
 				shard := newShard(Config{
-					Lifetime:       0,
+					Lifetime:       int64(-1 * time.Second),
 					MaxShardSize:   1024,
 					NumberOfShards: 16,
 				})

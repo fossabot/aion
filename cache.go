@@ -7,7 +7,7 @@ import (
 type Cache struct {
 	shards       []*shard
 	close        chan struct{}
-	lifetime     uint
+	lifetime     int64
 	maxShardSize uint
 }
 

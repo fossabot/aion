@@ -14,7 +14,7 @@ func TestDefaultConfig(t *testing.T) {
 		{
 			name: "Default config",
 			want: Config{
-				Lifetime:       uint(time.Hour * 24),
+				Lifetime:       int64(time.Hour * 24),
 				MaxShardSize:   1024,
 				NumberOfShards: 16,
 			},

@@ -6,16 +6,16 @@ import (
 
 type item struct {
 	object    interface{}
-	endOfLife uint
+	endOfLife int64
 }
 
-func newItem(object interface{}, lifeTime uint) item {
+func newItem(object interface{}, timeToLive int64) item {
 	return item{
 		object:    object,
-		endOfLife: uint(time.Now().Add(lifeTime * time.Second)
+		endOfLife: time.Now().Unix() + timeToLive,
 	}
 }
 
 func (i item) hasExpired() bool {
-	return uint(time.Now()) > i.endOfLife
+	return time.Now().Unix() > i.endOfLife
 }
